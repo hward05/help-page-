@@ -1,92 +1,153 @@
-# 📊 다중 데이터셋 시각화 도구 (Tkinter 기반)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>다중 데이터셋 시각화 도구</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #222;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    .highlight {
+      background-color: #e6f7ff;
+    }
+    a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
 
-이 도구는 최대 10개의 환경 센서 데이터를 동시에 불러와 필터링, 시각화, 통계 분석(T-검정), 다항식 회귀선 계산 등 다양한 기능을 지원하는 Python 기반의 고급 GUI 분석 플랫폼입니다.
+  <h1>📊 다중 데이터셋 시각화 도구 (Tkinter 기반)</h1>
+  <p>이 도구는 최대 10개의 환경 센서 데이터를 동시에 불러와 필터링, 시각화, 통계 분석(T-test), 다항식 회귀선 계산 등 다양한 기능을 지원하는 Python 기반의 고급 GUI 분석 플랫폼입니다.</p>
 
----
+  <h2>🛠 주요 기능 요약</h2>
+  <table>
+    <tr><th>기능</th><th>설명</th></tr>
+    <tr><td>📁 파일 불러오기</td><td>.txt, .csv, .xlsx 지원 (시트 선택 포함)</td></tr>
+    <tr><td>🎨 데이터 시각화</td><td>최대 10개까지 Y, Y1 축 값 표현 가능</td></tr>
+    <tr><td>📐 다항식 회귀선</td><td>AIC 기반 자동 차수 결정 (줌 시 자동 업데이트)</td></tr>
+    <tr><td>🧪 Welch’s T-Test</td><td>두 데이터셋의 평균 비교</td></tr>
+    <tr><td>🔍 Z-점수 필터링</td><td>이상치 제거 필터 (Y, Y1 별도 적용)</td></tr>
+    <tr><td>🔧 추세선 재생성</td><td>줌 후 회귀선 자동 갱신, 버튼으로 리셋</td></tr>
+    <tr><td>🖊 점 정보 표기 기능</td><td>점을 클릭 시 점의 x, y 정보 표시 기능 (ex. X:시간, Y:PM2.5)</td></tr>
+    <tr><td>💾 CSV 저장</td><td>필터링된 데이터셋을 CSV로 저장 가능</td></tr>
+    <tr><td>🌐 Help 버튼</td><td><a href="https://hward05.github.io/help-page-/" target="_blank">GitHub Pages 문서 연결</a></td></tr>
+  </table>
 
-## 🛠 주요 기능 요약
+  <h2>📁 주요 코드 구성</h2>
 
-| 기능 | 설명 |
-|------|------|
-| 📁 파일 불러오기 | .txt, .csv, .xlsx 지원 (시트 선택 포함) |
-| 🎨 데이터 시각화 | 최대 10개까지 Y, Y1 축 값 표현 가능 |
-| 📐 다항식 회귀선 | AIC 기반 자동 차수 결정 (줌 시 자동 업데이트) |
-| 🧪 Welch’s T-Test | 두 데이터셋의 평균 비교 |
-| 🔍 Z-점수 필터링 | 이상치 제거 필터 (Y, Y1 별도 적용) |
-| 🔧 줌 & 리셋 | 줌 후 회귀선 자동 갱신, 버튼으로 리셋 |
-| 🖊 어노테이션 | 클릭 시 점에 (x, y) 좌표 표시 |
-| 💾 CSV 저장 | 필터링된 데이터셋을 CSV로 저장 가능 |
-| 🌐 Help 버튼 | GitHub Pages 문서 연결 |
+  <h3><code>parse_file(path)</code></h3>
+  <ul>
+    <li>.txt, .csv, .xlsx 파일을 통일된 <code>pandas.DataFrame</code> 형식으로 파싱</li>
+    <li>Timestamp 컬럼 자동 생성</li>
+  </ul>
 
----
+  <h3><code>plot_all()</code></h3>
+  <ul>
+    <li>각 데이터셋을 필터링 및 시각화</li>
+    <li>Z-score 필터 적용</li>
+    <li><code>polyfit</code> + AIC로 회귀선 자동 생성</li>
+    <li>범례, 색상, 마커 구성</li>
+    <li>Zoom 및 Date/Time 옵션 UI 포함</li>
+  </ul>
 
-## 📁 주요 코드 구성
+  <h3><code>find_best_poly_degree_aic(x, y)</code></h3>
+  <ul>
+    <li>AIC 기준으로 1~30차까지 <code>polyfit</code> 비교</li>
+    <li>잔차 제곱합(RSS) + 복잡도 고려</li>
+  </ul>
 
-### `parse_file(path)`
-- .txt, .csv, .xlsx 파일을 통일된 `pandas.DataFrame` 형식으로 파싱
-- Timestamp 컬럼 자동 생성
+  <h3><code>on_zoom_release(event)</code></h3>
+  <ul>
+    <li>줌 이후 현재 범위에서 다시 회귀선 계산</li>
+    <li>기존 회귀선 제거 후 새로 그림</li>
+  </ul>
 
-### `plot_all()`
-- 각 데이터셋을 필터링 및 시각화
-- Z-score 필터 적용
-- polyfit + AIC로 회귀선 자동 생성
-- 범례, 색상, 마커 구성
-- zoom 및 date/time 옵션 UI 재구성 포함
+  <h3><code>add_polynomial_fit(...)</code></h3>
+  <ul>
+    <li><code>polyfit</code> 결과로 추세선 생성</li>
+    <li>Timestamp 타입인 경우 날짜 형식 변환</li>
+  </ul>
 
-### `find_best_poly_degree_aic(x, y)`
-- AIC 기준으로 1~30차까지 polyfit 비교
-- 잔차 제곱합(RSS) + 복잡도 고려
+  <h3><code>run_ttest()</code></h3>
+  <ul>
+    <li>Welch의 t-test로 두 데이터셋 비교</li>
+    <li>평균과 p-value를 팝업으로 표시</li>
+  </ul>
 
-### `on_zoom_release(event)`
-- 줌 이후 현재 보이는 데이터 범위에서 다시 회귀선 계산
-- 기존 회귀선 제거 후 새롭게 그림
+  <h3><code>export_filtered_data()</code></h3>
+  <ul>
+    <li>날짜/시간 필터를 기반으로 CSV 저장</li>
+    <li>자동 파일명 생성</li>
+  </ul>
 
-### `add_polynomial_fit(...)`
-- polyfit 결과로 회귀선 생성
-- Timestamp 타입일 경우 날짜 형식 변환
+  <h3><code>clear_annotations()</code></h3>
+  <ul>
+    <li>클릭으로 추가된 주석 모두 제거</li>
+  </ul>
 
-### `run_ttest()`
-- Welch의 t-test로 두 데이터셋 비교
-- 평균과 p-value를 팝업으로 표시
+  <h3><code>reset_zoom()</code></h3>
+  <ul>
+    <li>원래의 축 범위로 리셋</li>
+  </ul>
 
-### `export_filtered_data()`
-- 날짜/시간 필터를 기반으로 CSV 저장
-- 자동 파일명 생성
+  <h2>📐 회귀선 AIC 예시</h2>
+  <table>
+    <tr><th>차수</th><th>AIC 점수</th></tr>
+    <tr><td>1차</td><td>4078.2</td></tr>
+    <tr class="highlight"><td>2차</td><td>3371.9 ✅ (최소)</td></tr>
+    <tr><td>3차</td><td>3373.9</td></tr>
+    <tr><td>4차</td><td>3375.9</td></tr>
+    <tr><td>5차</td><td>3377.9</td></tr>
+  </table>
+  <p>위 예시처럼 AIC가 가장 낮은 차수를 선택하여 회귀선을 그림<br>줌을 변경할 경우 이 작업이 자동으로 다시 수행됨</p>
 
-### `clear_annotations()`
-- 클릭으로 추가된 주석 모두 제거
+  <h2>🖼 어노테이션 기능</h2>
+  <ul>
+    <li>사용자가 점을 클릭하면 <code>(x, y)</code> 주석이 표시됨</li>
+    <li>이 주석은 <code>Clear</code> 버튼으로 제거 가능</li>
+    <li>다양한 데이터 타입에 대해 호환 가능</li>
+  </ul>
 
-### `reset_zoom()`
-- 원래의 축 범위로 리셋
+  <h2>🌍 도움말 페이지 연결</h2>
+  <p>
+    <a href="https://hward05.github.io/help-page-/" target="_blank">GitHub Pages 문서 바로가기</a>
+  </p>
 
----
-
-## 📐 회귀선 AIC 예시
-
-| 차수 | AIC 점수 |
-|------|----------|
-| 1차 | 4078.2 |
-| 2차 | 3371.9 ✅ (최소) |
-| 3차 | 3373.9 |
-| 4차 | 3375.9 |
-| 5차 | 3377.9 |
-
-- 위 예시처럼 AIC가 가장 낮은 차수를 선택하여 회귀선을 그림
-- 줌을 변경할 경우 이 작업이 자동으로 다시 수행됨
-
----
-
-## 🖼 어노테이션 기능
-
-- 사용자가 점을 클릭하면 `(x, y)` 주석이 표시됨
-- 이 주석은 `Clear` 버튼으로 제거 가능
-- 다양한 데이터 타입에 대해 호환 가능
-
----
-
-## 🌍 도움말 페이지 연결
-
-```python
-def help_btn():
-    url = "https://hward05.github.io/help-page-/"
-    webbrowser.open(url)
+</body>
+</html>
